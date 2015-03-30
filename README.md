@@ -11,33 +11,47 @@ DOM Element Creation
 --------------------
 Create a new div
 
-``` DOM().new('div') ```
+```
+DOM().new('div')
+```
 
 Create (if it doesn't exist) or retrieve an element by ID
 
-``` DOM().newOrFind('div', 'elementID') ```
+```
+DOM().newOrFind('div', 'elementID')
+```
 
 DOM Lookup/Query:
 -----------
 
 Get element by id 
-``` DOM().id('elementID') ```
+```
+DOM().id('elementID')
+```
 
 
 Get element by id #2
-``` DOM( document.getElementById('elementID') ) ```
+```
+DOM( document.getElementById('elementID') )
+```
 
 
 Get elements by class (much faster than queryselectorall).
-``` DOM().byClass('className') ```
+```
+DOM().byClass('className')
+```
 
 
 Get elements by tag name (much faster than queryselectorall)
-``` DOM().byTag('className') ```
+```
+DOM().byTag('className')
+```
 
 
 Get elements by querySelectorAll (slowest method).
-``` DOM().find('selector') ```
+```
+DOM().find('selector')
+```
 
 
 
@@ -45,19 +59,27 @@ DOM Manipulation:
 -----------
 
 Set the className
-``` dandomObject.class('classname1 classname2') ```
+```
+dandomObject.class('classname1 classname2')
+```
 
 
 Add classes
-```dandomObject.addClass('classname1 classname2')```
+```
+dandomObject.addClass('classname1 classname2')
+```
 
 
 Remove classes
-```dandomObject.removeClass('classname1 classname2')```
+```
+dandomObject.removeClass('classname1 classname2')
+```
 
 
 Set inline styles
-```dandomObject.css({'padding':'10px','background-color':'red'})```
+```
+dandomObject.css({'padding':'10px','background-color':'red'})
+```
 
 
 Get inline style
@@ -65,23 +87,33 @@ Get inline style
 
 
 Set attributes
-```dandomObject.attr({'attribute-name':'value','another-attribute-name':'value'})```
+```
+dandomObject.attr({'attribute-name':'value','another-attribute-name':'value'})
+```
 
 
 Get attribute
-```dandomObject.attr('attribute-name')```
+```
+dandomObject.attr('attribute-name')
+```
 
 
 Get form element value:
-```dandomObject.val()```
+```
+dandomObject.val()
+```
 
 
 Set form element value:
-```dandomObject.val('set value')```
+```
+dandomObject.val('set value')
+```
 
 
 Set node innerHTML:
-```dandomObject.html('<b>hi</b>')```
+```
+dandomObject.html('<b>hi</b>')
+```
 
 
 Get node innerHTML:
@@ -89,29 +121,40 @@ Get node innerHTML:
 
 
 Set node text value:
-``` dandomObject.text('text value')```
+```
+dandomObject.text('text value')```
 
 
 Get node text value:
 ``` var nodetext = dandomObject.text()```
 
 Remove a node
-```dandomObject.remove()```
+```
+dandomObject.remove()
+```
 
 Insert node into another node: appendChild
-```dandomObject2.appendTo(dandomObject1)```
+```
+dandomObject2.appendTo(dandomObject1)
+```
 
 Insert dandom object into a dandom object:
 ```DOM().append(dandomObject)```
 
 Insert before a dandom node:
-```dandomObject.insertBefore(dandomObject2)```
+```
+dandomObject.insertBefore(dandomObject2)
+```
 
 Insert after a dandom node:
-```dandomObject.insertAfter(dandomObject2)```
+```
+dandomObject.insertAfter(dandomObject2)
+```
 
 Insert after as first child
-```dandomObject.insertFirst(dandomObject2)```
+```
+dandomObject.insertFirst(dandomObject2)
+```
 
 Insert with custom ordering/sorting
 ```
@@ -145,7 +188,9 @@ Default duration: 250
 Smooth Scrolling:
 -----------------------------
 
-```dandomObject.scrollTo(y, duration)```
+```
+dandomObject.scrollTo(y, duration)
+```
 
 
 Event Listeners
