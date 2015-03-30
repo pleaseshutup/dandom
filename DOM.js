@@ -73,6 +73,11 @@ DANDOM.prototype.byTag = function(selector) {
 	return newDANDOM;
 };
 
+// target parent
+DANDOM.prototype.parent = function() {
+	return new DANDOM(this.elements[0].parentNode);
+};
+
 // creates a new element
 DANDOM.prototype.new = function(type, ns) {
 	if (!type) {
@@ -129,11 +134,6 @@ DANDOM.prototype.removeClass = function(className) {
 		element.classList.remove(className);
 	});
 	return this;
-};
-
-// target parent
-DANDOM.prototype.parent = function() {
-	return new DANDOM(this.elements[0].parentNode);
 };
 
 // clone node and optionally children
@@ -284,11 +284,6 @@ DANDOM.prototype.text = function(text) {
 	} else {
 		return this.elements[0].textContent;
 	}
-};
-
-// returns the parent element of the current DANDOM element
-DANDOM.prototype.parent = function() {
-	return DOM(this.elements[0].parentNode);
 };
 
 // removes dom element, fails gracefully
