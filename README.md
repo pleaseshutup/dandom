@@ -117,16 +117,21 @@ dandomObject.html('<b>hi</b>')
 
 
 Get node innerHTML:
-``` var nodehtml = dandomObject.html()```
+```
+var nodehtml = dandomObject.html()
+```
 
 
 Set node text value:
 ```
-dandomObject.text('text value')```
+dandomObject.text('text value')
+```
 
 
 Get node text value:
-``` var nodetext = dandomObject.text()```
+```
+var nodetext = dandomObject.text()
+```
 
 Remove a node
 ```
@@ -139,7 +144,10 @@ dandomObject2.appendTo(dandomObject1)
 ```
 
 Insert dandom object into a dandom object:
-```DOM().append(dandomObject)```
+```
+DOM().append(dandomObject)
+```
+
 
 Insert before a dandom node:
 ```
