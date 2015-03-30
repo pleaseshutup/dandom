@@ -7,10 +7,9 @@ DOM() creates a new instance of DANDOM() for convenience and brevity (instead of
 
 DOM() accepts any single node or a collection of nodes and returns the DANDOM object for those nodes.
 
-DOM Element Creation
+DOM Element Creation: Create new nodes and wrap them into a DANDOM object
 -----------
 Create a new div
-
 
 ``` DOM().new('div') ```
 
@@ -19,6 +18,8 @@ DOM Element Creation: Create or retreive an element by ID
 
 ``` DOM().newOrFind('div', 'elementID') ```
 
+DOM Lookup/Query: Find nodes and wrap them into a DANDOM object
+-----------
 
 Get element by id 
 
