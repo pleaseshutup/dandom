@@ -427,6 +427,14 @@ DANDOM.prototype.trigger = function(eventName, options) {
 	return this;
 };
 
+// appendIf will only run the defined dom change function if it is not yet in the dom
+DANDOM.prototype.appendIf = function(appendFunc,appendFuncTarget) {
+	if(!document.contains(this.elements[0])){
+		this[appendFunc](appendFuncTarget);
+	}
+	return this;
+};
+
 // appendTo inserts the elements under the provided parent
 DANDOM.prototype.appendTo = function(appendTo) {
 	var parItem = appendTo.elements[0];
