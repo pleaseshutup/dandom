@@ -224,7 +224,7 @@ DANDOM.prototype.animate = function() {
 				addTransform = false;
 			}
 		} else {
-			if( element.style.transform ){
+			if (element.style.transform) {
 				if (element.style.transform.match('translate')) {
 					addTransform = false;
 				}
@@ -371,6 +371,14 @@ DANDOM.prototype.touch = function(execFunc) {
 			window.addEventListener('mousemove', tm);
 			window.addEventListener('touchend', te);
 			window.addEventListener('mouseup', te);
+			document.addEventListener('mouseout', tes);
+		};
+		var tes = function(e){
+			e = e ? e : window.event;
+			var from = e.relatedTarget || e.toElement;
+			if (!from || from.nodeName == "HTML") {
+				te(e);
+			}
 		};
 		var te = function(e) {
 			danTouch.what = 'end';
@@ -380,6 +388,7 @@ DANDOM.prototype.touch = function(execFunc) {
 			window.removeEventListener('mousemove', tm);
 			window.removeEventListener('touchmove', te);
 			window.removeEventListener('mousemove', te);
+			document.removeEventListener('mouseout', tes);
 		};
 		var tm = function(e) {
 			danTouch.what = 'move';
@@ -398,6 +407,7 @@ DANDOM.prototype.touch = function(execFunc) {
 
 	});
 };
+
 
 // returns the absolute position of the element in pageX/pageY but the relative to the screen dimensions in regular bounding rect form
 DANDOM.prototype.pos = function() {
@@ -428,8 +438,8 @@ DANDOM.prototype.trigger = function(eventName, options) {
 };
 
 // appendIf will only run the defined dom change function if it is not yet in the dom
-DANDOM.prototype.appendIf = function(appendFunc,appendFuncTarget) {
-	if(!document.contains(this.elements[0])){
+DANDOM.prototype.appendIf = function(appendFunc, appendFuncTarget) {
+	if (!document.contains(this.elements[0])) {
 		this[appendFunc](appendFuncTarget);
 	}
 	return this;
@@ -623,4 +633,20 @@ if (!window.requestAnimationFrame) {
 				window.setTimeout(callback, 1000 / 60);
 			};
 	})();
+}
+
+/* foreach polyfill */
+if (!Array.prototype.forEach) {
+	Array.prototype.forEach = function(callback) {
+		if (this === null) {
+			throw new TypeError(' this is null or not defined');
+		}
+		var len = this.length,
+			i = 0;
+		for (i = 0; i < len; i++) {
+			(function(item, index, ar) {
+				callback(item, index, ar);
+			})(this[i], i, this);
+		}
+	};
 }
