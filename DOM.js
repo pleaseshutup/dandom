@@ -83,25 +83,19 @@ DANDOM.prototype.new = function(type, ns) {
 	if (!type) {
 		type = 'div';
 	}
-	if (!ns) {
+	if( type !== 'svg'){
 		this.elements = [document.createElement(type)];
 	} else {
-		var useNS = '';
-		if (ns == 'svg') {
-			useNS = "http://www.w3.org/2000/svg";
-		} else if (ns == 'xlink') {
-			useNS = "http://www.w3.org/1999/xlink";
-		}
-		this.elements = [document.createElementNS(useNS, type)];
+		this.elements = [document.createElementNS('http://www.w3.org/2000/svg', type)];
 	}
 	return this;
 };
 
 // attempts by id for element or creates it and sets the id
-DANDOM.prototype.newOrFind = function(type, id, ns) {
+DANDOM.prototype.newOrFind = function(type, id) {
 	var exists = new DANDOM().id(id);
 	if (!exists.elements) {
-		exists = new DANDOM().new(type, ns).id(id);
+		exists = new DANDOM().new(type).id(id);
 	}
 	return exists;
 };
@@ -373,7 +367,7 @@ DANDOM.prototype.touch = function(execFunc) {
 			window.addEventListener('mouseup', te);
 			document.addEventListener('mouseout', tes);
 		};
-		var tes = function(e){
+		var tes = function(e) {
 			e = e ? e : window.event;
 			var from = e.relatedTarget || e.toElement;
 			if (!from || from.nodeName == "HTML") {
