@@ -83,7 +83,7 @@ DANDOM.prototype.new = function(type, ns) {
 	if (!type) {
 		type = 'div';
 	}
-	if( type !== 'svg'){
+	if (type !== 'svg' && type !== 'use') {
 		this.elements = [document.createElement(type)];
 	} else {
 		this.elements = [document.createElementNS('http://www.w3.org/2000/svg', type)];
