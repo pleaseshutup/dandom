@@ -196,7 +196,8 @@ DANDOM.prototype.animate = function() {
 	var css = {},
 		speed = 250,
 		easing = 'ease-in-out',
-		callback = false;
+		callback = false,
+		K;
 	[].slice.call(arguments).forEach(function(argument) {
 		var type = typeof(argument);
 		switch (type) {
@@ -215,15 +216,18 @@ DANDOM.prototype.animate = function() {
 		}
 	});
 	this.elements.forEach(function(element) {
+		element.transitionEndCalled = false;
+
 		var transitionString = '',
 			addTransform = true;
 		if (css.transform) {
-			if (css.transform.match('translate')) {
-				addTransform = false;
+			addTransform = false;
+			if (!css.transform.match(/translate/)) {
+				css.transform += ' translate3d(0,0,0)';
 			}
 		} else {
 			if (element.style.transform) {
-				if (element.style.transform.match('translate')) {
+				if (element.style.transform.match(/translate/)) {
 					addTransform = false;
 				}
 			}
@@ -238,24 +242,29 @@ DANDOM.prototype.animate = function() {
 			}, 10);
 		};
 
-		for (var K in css) {
-
+		for (K in css) {
 			if (transitionString) {
 				transitionString += ', ';
 			}
 			transitionString += K + ' ' + (speed / 1000) + 's ' + easing;
 			(setStyle(K, css[K]));
-
 		}
 		element.style.transition = transitionString;
 		if (callback) {
+			element.removeEventListener("transitionend", listener);
 			var listener = function(e) {
+				element.transitionEndCalled = true;
 				element.removeEventListener("transitionend", listener);
-				setTimeout(function() {
-					callback(e);
-				}, 10);
+				callback(e);
 			};
 			element.addEventListener("transitionend", listener);
+			setTimeout(function transitionEndCallbackCheck() {
+				if (!element.transitionEndCalled) {
+					listener({
+						target: element
+					});
+				}
+			}, speed + 10);
 		}
 	});
 	return this;
