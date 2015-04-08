@@ -83,19 +83,23 @@ DANDOM.prototype.new = function(type, ns) {
 	if (!type) {
 		type = 'div';
 	}
-	if (type !== 'svg' && type !== 'use') {
+	if(!ns){
 		this.elements = [document.createElement(type)];
 	} else {
-		this.elements = [document.createElementNS('http://www.w3.org/2000/svg', type)];
+		var useNS = 'http://www.w3.org/2000/svg';
+		if( ns !== 'svg'){
+			useNS = ns;
+		}
+		this.elements = [document.createElementNS(useNS, type)];		
 	}
 	return this;
 };
 
 // attempts by id for element or creates it and sets the id
-DANDOM.prototype.newOrFind = function(type, id) {
+DANDOM.prototype.newOrFind = function(type, id, ns) {
 	var exists = new DANDOM().id(id);
 	if (!exists.elements) {
-		exists = new DANDOM().new(type).id(id);
+		exists = new DANDOM().new(type, ns).id(id);
 	}
 	return exists;
 };
