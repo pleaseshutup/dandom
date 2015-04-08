@@ -384,8 +384,8 @@ DANDOM.prototype.touch = function(execFunc) {
 			execFunc(e);
 			window.removeEventListener('touchmove', tm);
 			window.removeEventListener('mousemove', tm);
-			window.removeEventListener('touchmove', te);
-			window.removeEventListener('mousemove', te);
+			window.removeEventListener('touchend', te);
+			window.removeEventListener('mouseup', te);
 			document.removeEventListener('mouseout', tes);
 		};
 		var tm = function(e) {
