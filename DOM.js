@@ -83,14 +83,14 @@ DANDOM.prototype.new = function(type, ns) {
 	if (!type) {
 		type = 'div';
 	}
-	if(!ns){
+	if (!ns) {
 		this.elements = [document.createElement(type)];
 	} else {
 		var useNS = 'http://www.w3.org/2000/svg';
-		if( ns !== 'svg'){
+		if (ns !== 'svg') {
 			useNS = ns;
 		}
-		this.elements = [document.createElementNS(useNS, type)];		
+		this.elements = [document.createElementNS(useNS, type)];
 	}
 	return this;
 };
@@ -608,6 +608,10 @@ DANDOM.prototype.http = function(conf) {
 			conf.data = '';
 		}
 		var request = new XMLHttpRequest();
+		request.timeout = 60000;
+		request.ontimeout = function(e) {
+			callback(false);
+		};
 		request.open(conf.type, conf.url, true);
 		request.onload = function() {
 			var ret = false;
@@ -625,6 +629,9 @@ DANDOM.prototype.http = function(conf) {
 			if (conf.callback) {
 				conf.callback(ret);
 			}
+		};
+		request.onerror = function(e) {
+			conf.callback(false);
 		};
 		request.send(conf.data);
 	}
