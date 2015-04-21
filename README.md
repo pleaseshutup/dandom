@@ -7,6 +7,8 @@ DOM() creates a new instance of DANDOM() for convenience and brevity (instead of
 
 DOM() accepts any single node or a collection of nodes and returns the DANDOM object for those nodes.
 
+Easily extend DANDOM with simple libraries by using DANDOM.prototype.myfunction = function(){ }
+
 DOM Element Creation
 --------------------
 Create a new div
