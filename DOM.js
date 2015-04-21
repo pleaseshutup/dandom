@@ -83,14 +83,14 @@ DANDOM.prototype.new = function(type, ns) {
 	if (!type) {
 		type = 'div';
 	}
-	if(!ns){
+	if (!ns) {
 		this.elements = [document.createElement(type)];
 	} else {
 		var useNS = 'http://www.w3.org/2000/svg';
-		if( ns !== 'svg'){
+		if (ns !== 'svg') {
 			useNS = ns;
 		}
-		this.elements = [document.createElementNS(useNS, type)];		
+		this.elements = [document.createElementNS(useNS, type)];
 	}
 	return this;
 };
@@ -359,26 +359,28 @@ DANDOM.prototype.off = function(eventNames, execFunc) {
 
 DANDOM.prototype.touch = function(execFunc) {
 	this.elements.forEach(function(element) {
-		var danTouch = {
-			sentSwipe: false
-		};
+		var danTouch = {};
 		var ts = function(e) {
-			danTouch.sentSwipe = false;
 			danTouch.what = 'start';
 			e.danTouch = danTouch;
-			if (e.touches) {
-				danTouch.ox = e.touches[0].pageX;
-				danTouch.oy = e.touches[0].pageY;
-			} else {
-				danTouch.ox = e.pageX;
-				danTouch.oy = e.pageY;
-			}
+
+			danTouch.x = e.touches ? e.touches[0].pageX : e.pageX;
+			danTouch.y = e.touches ? e.touches[0].pageY : e.pageY;
+
+			danTouch.ox = danTouch.lx = danTouch.x * 1;
+			danTouch.oy = danTouch.ly = danTouch.y * 1;
+
+			danTouch.diffx = 0;
+			danTouch.diffy = 0;
+
 			execFunc(e);
+
 			window.addEventListener('touchmove', tm);
 			window.addEventListener('mousemove', tm);
 			window.addEventListener('touchend', te);
 			window.addEventListener('mouseup', te);
 			document.addEventListener('mouseout', tes);
+
 		};
 		var tes = function(e) {
 			e = e ? e : window.event;
@@ -400,21 +402,43 @@ DANDOM.prototype.touch = function(execFunc) {
 		var tm = function(e) {
 			danTouch.what = 'move';
 			e.danTouch = danTouch;
-			if (e.touches) {
-				danTouch.diffx = e.touches[0].pageX - danTouch.ox;
-				danTouch.diffy = e.touches[0].pageY - danTouch.oy;
+
+			danTouch.x = e.touches ? e.touches[0].pageX : e.pageX;
+			danTouch.y = e.touches ? e.touches[0].pageY : e.pageY;
+
+			if (danTouch.x > danTouch.lx) {
+				danTouch.swipe = 'r';
+				danTouch.dirx = 'r';
 			} else {
-				danTouch.diffx = e.pageX - danTouch.ox;
-				danTouch.diffy = e.pageY - danTouch.oy;
+				danTouch.swipe = 'l';
+				danTouch.dirx = 'l';
 			}
+			if (danTouch.y > danTouch.ly) {
+				danTouch.diry = 'd';
+			} else {
+				danTouch.diry = 'u';
+			}
+			if (Math.abs(danTouch.diffy) > Math.abs(danTouch.diffx)) {
+				if (danTouch.y > danTouch.ly) {
+					danTouch.swipe = 'd';
+				} else {
+					danTouch.swipe = 'u';
+				}
+			}
+			danTouch.lx = danTouch.x * 1;
+			danTouch.ly = danTouch.y * 1;
+
+			danTouch.diffx = danTouch.x - danTouch.ox;
+			danTouch.diffy = danTouch.y - danTouch.oy;
+
 			execFunc(e);
+
 		};
 		element.addEventListener('touchstart', ts);
 		element.addEventListener('mousedown', ts);
-
 	});
+	return this;
 };
-
 
 // returns the absolute position of the element in pageX/pageY but the relative to the screen dimensions in regular bounding rect form
 DANDOM.prototype.pos = function() {
@@ -640,20 +664,4 @@ if (!window.requestAnimationFrame) {
 				window.setTimeout(callback, 1000 / 60);
 			};
 	})();
-}
-
-/* foreach polyfill */
-if (!Array.prototype.forEach) {
-	Array.prototype.forEach = function(callback) {
-		if (this === null) {
-			throw new TypeError(' this is null or not defined');
-		}
-		var len = this.length,
-			i = 0;
-		for (i = 0; i < len; i++) {
-			(function(item, index, ar) {
-				callback(item, index, ar);
-			})(this[i], i, this);
-		}
-	};
 }
