@@ -632,10 +632,6 @@ DANDOM.prototype.http = function(conf) {
 			conf.data = '';
 		}
 		var request = new XMLHttpRequest();
-		request.timeout = 60000;
-		request.ontimeout = function(e) {
-			callback(false);
-		};
 		request.open(conf.type, conf.url, true);
 		request.onload = function() {
 			var ret = false;
@@ -653,9 +649,6 @@ DANDOM.prototype.http = function(conf) {
 			if (conf.callback) {
 				conf.callback(ret);
 			}
-		};
-		request.onerror = function(e) {
-			conf.callback(false);
 		};
 		request.send(conf.data);
 	}
