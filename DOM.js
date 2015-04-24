@@ -147,8 +147,9 @@ DANDOM.prototype.css = function(css) {
 	if (typeof css !== 'string') {
 		this.elements.forEach(function(element) {
 			for (var K in css) {
-				element.style.setProperty(K, css[K]);
-				if (K === 'transform') {
+				if (K !== 'transform') {
+					element.style.setProperty(K, css[K]);
+				} else {
 					element.style.webkitTransform = css[K];
 				}
 			}
@@ -241,9 +242,10 @@ DANDOM.prototype.animate = function() {
 
 		var setStyle = function(prop, val) {
 			setTimeout(function() {
-				element.style.setProperty(prop, val);
-				if (prop === 'transform') {
-					element.style.webkitTransform = css[K];
+				if (prop !== 'transform') {
+					element.style.setProperty(prop, val);
+				} else {
+					element.style.webkitTransform = val;
 				}
 			}, 10);
 		};
@@ -310,30 +312,32 @@ DANDOM.prototype.remove = function() {
 		this.elements = false;
 	}
 };
-
 // on adds eventlisteners to the elements
 DANDOM.prototype.on = function(eventNames, execFunc) {
-	var self = this, elements = this.elements;
+	var self = this,
+		elements = this.elements;
 	eventNames.split(/[\s,]+/).forEach(function(eventName) {
 		eventName = eventName.trim();
 
 		if (eventName === 'click') {
-			if('ontouchstart' in window){
+			if ('ontouchstart' in window) {
 				// special event click for ios cause apple
-				self.touch(function(e){
-					if(e.danTouch.what === 'tap'){
+				self.touch(function danTouchTap(e) {
+					if (e.danTouch.what === 'tap') {
 						execFunc(e);
 					}
 				});
 				elements.forEach(function(element) {
-					element.addEventListener('click', function(e){
-						e.preventDefault();
+					element.addEventListener('click', function(e) {
+						if (element.href) {
+							e.preventDefault();
+						}
 					}, false);
 				});
 				eventName = '';
 			}
 		}
-		if(eventName){
+		if (eventName) {
 			elements.forEach(function(element) {
 				if (!elements.events) {
 					element.events = {};
@@ -380,6 +384,7 @@ DANDOM.prototype.off = function(eventNames, execFunc) {
 };
 
 DANDOM.prototype.touch = function(execFunc) {
+	var hasTouch = ('ontouchstart' in window);
 	this.elements.forEach(function(element) {
 		var danTouch = {};
 		var ts = function(e) {
@@ -398,12 +403,15 @@ DANDOM.prototype.touch = function(execFunc) {
 			danTouch.timeStart = new Date().getTime();
 			execFunc(e);
 
-			window.addEventListener('touchmove', tm);
-			window.addEventListener('mousemove', tm);
-			window.addEventListener('touchend', te);
-			window.removeEventListener('touchcancel', tc);
-			window.addEventListener('mouseup', te);
-			document.addEventListener('mouseout', tes);
+			if(hasTouch){
+				window.addEventListener('touchmove', tm);
+				window.addEventListener('mousemove', tm);
+				window.addEventListener('touchend', te);
+				window.removeEventListener('touchcancel', tc);
+			} else {
+				window.addEventListener('mouseup', te);
+				document.addEventListener('mouseout', tes);
+			}
 
 		};
 		var tc = function(e) {
@@ -427,12 +435,15 @@ DANDOM.prototype.touch = function(execFunc) {
 				e.danTouch.what = 'tap';
 				execFunc(e);
 			}
-			window.removeEventListener('touchmove', tm);
-			window.removeEventListener('mousemove', tm);
-			window.removeEventListener('touchend', te);
-			window.removeEventListener('touchcancel', tc);
-			window.removeEventListener('mouseup', te);
-			document.removeEventListener('mouseout', tes);
+			if(hasTouch){
+				window.removeEventListener('touchmove', tm);
+				window.removeEventListener('mousemove', tm);
+				window.removeEventListener('touchend', te);
+				window.removeEventListener('touchcancel', tc);
+			} else {
+				window.removeEventListener('mouseup', te);
+				document.removeEventListener('mouseout', tes);
+			}
 		};
 		var tm = function(e) {
 			danTouch.what = 'move';
@@ -470,8 +481,11 @@ DANDOM.prototype.touch = function(execFunc) {
 			execFunc(e);
 
 		};
-		element.addEventListener('touchstart', ts);
-		element.addEventListener('mousedown', ts);
+		if(hasTouch){
+			element.addEventListener('touchstart', ts);
+		} else {
+			element.addEventListener('mousedown', ts);
+		}
 	});
 	return this;
 };
