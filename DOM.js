@@ -148,7 +148,7 @@ DANDOM.prototype.css = function(css) {
 		this.elements.forEach(function(element) {
 			for (var K in css) {
 				element.style.setProperty(K, css[K]);
-				if(K === 'transform'){
+				if (K === 'transform') {
 					element.style.webkitTransform = css[K];
 				}
 			}
@@ -242,7 +242,7 @@ DANDOM.prototype.animate = function() {
 		var setStyle = function(prop, val) {
 			setTimeout(function() {
 				element.style.setProperty(prop, val);
-				if(prop === 'transform'){
+				if (prop === 'transform') {
 					element.style.webkitTransform = css[K];
 				}
 			}, 10);
@@ -313,28 +313,44 @@ DANDOM.prototype.remove = function() {
 
 // on adds eventlisteners to the elements
 DANDOM.prototype.on = function(eventNames, execFunc) {
-	var elements = this.elements;
+	var self = this, elements = this.elements;
 	eventNames.split(/[\s,]+/).forEach(function(eventName) {
 		eventName = eventName.trim();
-		elements.forEach(function(element) {
 
-			if (!elements.events) {
-				element.events = {};
+		if (eventName === 'click') {
+			if('ontouchstart' in window){
+				// special event click for ios cause apple
+				self.touch(function(e){
+					if(e.danTouch.what === 'tap'){
+						execFunc(e);
+					}
+				});
+				elements.forEach(function(element) {
+					element.addEventListener('click', function(e){
+						e.preventDefault();
+					}, false);
+				});
+				eventName = '';
 			}
-			if (!element.events[eventName]) {
-				element.events[eventName] = [];
-			}
-			element.events[eventName].push(execFunc);
-			element.addEventListener(eventName, execFunc, false);
-
-			if (eventName !== 'animationend') {} else {
-				// also execute webkitanimation end when attaching animation end
-				setTimeout(function() {
-					element.addEventListener('webkitAnimationEnd', execFunc);
-				}, 1);
-			}
-
-		});
+		}
+		if(eventName){
+			elements.forEach(function(element) {
+				if (!elements.events) {
+					element.events = {};
+				}
+				if (!element.events[eventName]) {
+					element.events[eventName] = [];
+				}
+				element.events[eventName].push(execFunc);
+				element.addEventListener(eventName, execFunc, false);
+				if (eventName !== 'animationend') {} else {
+					// also execute webkitanimation end when attaching animation end
+					setTimeout(function() {
+						element.addEventListener('webkitAnimationEnd', execFunc);
+					}, 1);
+				}
+			});
+		}
 	});
 	return this;
 };
@@ -379,14 +395,19 @@ DANDOM.prototype.touch = function(execFunc) {
 			danTouch.diffx = 0;
 			danTouch.diffy = 0;
 
+			danTouch.timeStart = new Date().getTime();
 			execFunc(e);
 
 			window.addEventListener('touchmove', tm);
 			window.addEventListener('mousemove', tm);
 			window.addEventListener('touchend', te);
+			window.removeEventListener('touchcancel', tc);
 			window.addEventListener('mouseup', te);
 			document.addEventListener('mouseout', tes);
 
+		};
+		var tc = function(e) {
+			danTouch.tapCancel = true;
 		};
 		var tes = function(e) {
 			e = e ? e : window.event;
@@ -398,15 +419,24 @@ DANDOM.prototype.touch = function(execFunc) {
 		var te = function(e) {
 			danTouch.what = 'end';
 			e.danTouch = danTouch;
+			danTouch.timeEnd = new Date().getTime();
+			danTouch.timeElapsed = danTouch.timeEnd - danTouch.timeStart;
 			execFunc(e);
+
+			if (danTouch.timeStart && danTouch.timeElapsed && !danTouch.tapCancel) {
+				e.danTouch.what = 'tap';
+				execFunc(e);
+			}
 			window.removeEventListener('touchmove', tm);
 			window.removeEventListener('mousemove', tm);
 			window.removeEventListener('touchend', te);
+			window.removeEventListener('touchcancel', tc);
 			window.removeEventListener('mouseup', te);
 			document.removeEventListener('mouseout', tes);
 		};
 		var tm = function(e) {
 			danTouch.what = 'move';
+			danTouch.tapCancel = true;
 			e.danTouch = danTouch;
 
 			danTouch.x = e.touches ? e.touches[0].pageX : e.pageX;
