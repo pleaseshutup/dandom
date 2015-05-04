@@ -311,13 +311,14 @@ DANDOM.prototype.remove = function() {
 		this.elements = false;
 	}
 };
+
 // on adds eventlisteners to the elements
 DANDOM.prototype.on = function(eventNames, execFunc) {
 	var self = this,
 		elements = this.elements;
 	eventNames.split(/[\s,]+/).forEach(function(eventName) {
 		if (eventName === 'click') {
-			if ('ontouchstart' in window) {
+			if (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) {
 				// special event click for ios cause apple
 				self.touch(function danTouchTap(e) {
 					if (e.danTouch.what === 'tap') {
