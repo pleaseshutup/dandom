@@ -405,10 +405,10 @@ DANDOM.prototype.touch = function(execFunc) {
 
 			if(hasTouch){
 				window.addEventListener('touchmove', tm);
-				window.addEventListener('mousemove', tm);
 				window.addEventListener('touchend', te);
 				window.removeEventListener('touchcancel', tc);
 			} else {
+				window.addEventListener('mousemove', tm);
 				window.addEventListener('mouseup', te);
 				document.addEventListener('mouseout', tes);
 			}
@@ -437,10 +437,10 @@ DANDOM.prototype.touch = function(execFunc) {
 			}
 			if(hasTouch){
 				window.removeEventListener('touchmove', tm);
-				window.removeEventListener('mousemove', tm);
 				window.removeEventListener('touchend', te);
 				window.removeEventListener('touchcancel', tc);
 			} else {
+				window.removeEventListener('mousemove', tm);
 				window.removeEventListener('mouseup', te);
 				document.removeEventListener('mouseout', tes);
 			}
@@ -676,7 +676,11 @@ DANDOM.prototype.scrollTo = function(scrollTo, duration) {
 DANDOM.prototype.http = function(conf) {
 	if (conf.url) {
 		if (!conf.type) {
-			conf.type = 'GET';
+			if(!conf.data){
+				conf.type = 'GET';
+			} else {
+				conf.type = 'POST';
+			}
 		}
 		if (!conf.data) {
 			conf.data = '';
