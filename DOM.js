@@ -116,7 +116,6 @@ DANDOM.prototype.class = function(classNames) {
 DANDOM.prototype.addClass = function(className) {
 	var thisElements = this;
 	className.split(/[\s,]+/).forEach(function(clsName) {
-		clsName = clsName.trim();
 		if (clsName) {
 			thisElements.elements.forEach(function(element) {
 				element.classList.add(clsName);
@@ -317,8 +316,6 @@ DANDOM.prototype.on = function(eventNames, execFunc) {
 	var self = this,
 		elements = this.elements;
 	eventNames.split(/[\s,]+/).forEach(function(eventName) {
-		eventName = eventName.trim();
-
 		if (eventName === 'click') {
 			if ('ontouchstart' in window) {
 				// special event click for ios cause apple
@@ -363,7 +360,6 @@ DANDOM.prototype.on = function(eventNames, execFunc) {
 DANDOM.prototype.off = function(eventNames, execFunc) {
 	var elements = this.elements;
 	eventNames.split(/[\s,]+/).forEach(function(eventName) {
-		eventName = eventName.trim();
 		elements.forEach(function(element) {
 
 			if (typeof execFunc === 'function') {
