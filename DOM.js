@@ -381,47 +381,52 @@ DANDOM.prototype.off = function(eventNames, execFunc) {
 };
 
 DANDOM.prototype.touch = function(execFunc) {
-	var hasTouch = ('ontouchstart' in window);
 	this.elements.forEach(function(element) {
-		var danTouch = {};
-		var ts = function(e) {
+		var danTouch = {started: false};
+		var ts = function dandom_start(e) {
+
 			danTouch.what = 'start';
-			e.danTouch = danTouch;
+			if(!danTouch.started){
 
-			danTouch.x = e.touches ? e.touches[0].pageX : e.pageX;
-			danTouch.y = e.touches ? e.touches[0].pageY : e.pageY;
+				danTouch.started = true;
+				e.danTouch = danTouch;
 
-			danTouch.ox = danTouch.lx = danTouch.x * 1;
-			danTouch.oy = danTouch.ly = danTouch.y * 1;
+				danTouch.x = e.touches ? e.touches[0].pageX : e.pageX;
+				danTouch.y = e.touches ? e.touches[0].pageY : e.pageY;
 
-			danTouch.diffx = 0;
-			danTouch.diffy = 0;
+				danTouch.ox = danTouch.lx = danTouch.x * 1;
+				danTouch.oy = danTouch.ly = danTouch.y * 1;
 
-			danTouch.timeStart = new Date().getTime();
-			execFunc(e);
+				danTouch.diffx = 0;
+				danTouch.diffy = 0;
 
-			if(hasTouch){
-				window.addEventListener('touchmove', tm);
-				window.addEventListener('touchend', te);
-				window.removeEventListener('touchcancel', tc);
-			} else {
-				window.addEventListener('mousemove', tm);
-				window.addEventListener('mouseup', te);
-				document.addEventListener('mouseout', tes);
+				danTouch.timeStart = new Date().getTime();
+				execFunc(e);
+
+				if( e.type.match(/touch/) ){
+					window.addEventListener('touchmove', tm);
+					window.addEventListener('touchend', te);
+					window.addEventListener('touchcancel', tc);
+				} else {
+					window.addEventListener('mousemove', tm);
+					window.addEventListener('mouseup', te);
+					document.addEventListener('mouseout', tes);
+				}
+
 			}
-
 		};
-		var tc = function(e) {
+		var tc = function dandom_cancel(e) {
 			danTouch.tapCancel = true;
 		};
-		var tes = function(e) {
+		var tes = function dandom_endhack(e) {
 			e = e ? e : window.event;
 			var from = e.relatedTarget || e.toElement;
 			if (!from || from.nodeName == "HTML") {
 				te(e);
 			}
 		};
-		var te = function(e) {
+		var te = function dandom_end(e) {
+
 			danTouch.what = 'end';
 			e.danTouch = danTouch;
 			danTouch.timeEnd = new Date().getTime();
@@ -432,17 +437,18 @@ DANDOM.prototype.touch = function(execFunc) {
 				e.danTouch.what = 'tap';
 				execFunc(e);
 			}
-			if(hasTouch){
-				window.removeEventListener('touchmove', tm);
-				window.removeEventListener('touchend', te);
-				window.removeEventListener('touchcancel', tc);
-			} else {
-				window.removeEventListener('mousemove', tm);
-				window.removeEventListener('mouseup', te);
-				document.removeEventListener('mouseout', tes);
-			}
+
+			window.removeEventListener('touchmove', tm);
+			window.removeEventListener('touchend', te);
+			window.removeEventListener('touchcancel', tc);
+			window.removeEventListener('mousemove', tm);
+			window.removeEventListener('mouseup', te);
+			document.removeEventListener('mouseout', tes);
+			setTimeout(function(){ danTouch.started = false; }, 10);
+
 		};
-		var tm = function(e) {
+		var tm = function dandom_move(e) {
+
 			danTouch.what = 'move';
 			danTouch.tapCancel = true;
 			e.danTouch = danTouch;
@@ -478,11 +484,10 @@ DANDOM.prototype.touch = function(execFunc) {
 			execFunc(e);
 
 		};
-		if(hasTouch){
-			element.addEventListener('touchstart', ts);
-		} else {
-			element.addEventListener('mousedown', ts);
-		}
+
+		element.addEventListener('touchstart', ts);
+		element.addEventListener('mousedown', ts);
+
 	});
 	return this;
 };
