@@ -149,6 +149,7 @@ DANDOM.prototype.css = function(css) {
 				if (K !== 'transform') {
 					element.style.setProperty(K, css[K]);
 				} else {
+					element.style.setProperty(K, css[K]);
 					element.style.webkitTransform = css[K];
 				}
 			}
@@ -244,6 +245,7 @@ DANDOM.prototype.animate = function() {
 				if (prop !== 'transform') {
 					element.style.setProperty(prop, val);
 				} else {
+					element.style.setProperty(prop, val);
 					element.style.webkitTransform = val;
 				}
 			}, 10);
