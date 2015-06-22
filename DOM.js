@@ -168,14 +168,10 @@ DANDOM.prototype.attr = function(attr) {
 	} else {
 		this.elements.forEach(function(element) {
 			for (var K in attr) {
-				if (K !== 'disabled' && K !== 'checked') {
+				if (typeof attr[K] !== 'boolean') {
 					element.setAttribute(K, attr[K]);
 				} else {
-					if (!attr[K]) {
-						element[K] = false;
-					} else {
-						element[K] = true;
-					}
+					element[K] = attr[K];
 				}
 			}
 		});
@@ -384,11 +380,13 @@ DANDOM.prototype.off = function(eventNames, execFunc) {
 
 DANDOM.prototype.touch = function(execFunc) {
 	this.elements.forEach(function(element) {
-		var danTouch = {started: false};
+		var danTouch = {
+			started: false
+		};
 		var ts = function dandom_start(e) {
 
 			danTouch.what = 'start';
-			if(!danTouch.started){
+			if (!danTouch.started) {
 
 				danTouch.started = true;
 				e.danTouch = danTouch;
@@ -405,7 +403,7 @@ DANDOM.prototype.touch = function(execFunc) {
 				danTouch.timeStart = new Date().getTime();
 				execFunc(e);
 
-				if( e.type.match(/touch/) ){
+				if (e.type.match(/touch/)) {
 					window.addEventListener('touchmove', tm);
 					window.addEventListener('touchend', te);
 					window.addEventListener('touchcancel', tc);
@@ -446,7 +444,9 @@ DANDOM.prototype.touch = function(execFunc) {
 			window.removeEventListener('mousemove', tm);
 			window.removeEventListener('mouseup', te);
 			document.removeEventListener('mouseout', tes);
-			setTimeout(function(){ danTouch.started = false; }, 10);
+			setTimeout(function() {
+				danTouch.started = false;
+			}, 10);
 
 		};
 		var tm = function dandom_move(e) {
@@ -487,8 +487,12 @@ DANDOM.prototype.touch = function(execFunc) {
 
 		};
 
-		element.addEventListener('touchstart', ts);
-		element.addEventListener('mousedown', ts);
+		if (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) {
+			element.addEventListener('touchstart', ts);
+		} else {
+			element.addEventListener('touchstart', ts);
+			element.addEventListener('mousedown', ts);
+		}
 
 	});
 	return this;
@@ -513,13 +517,32 @@ DANDOM.prototype.pos = function() {
 };
 
 // event trigger
-DANDOM.prototype.trigger = function(eventName, options) {
-	var event = document.createEvent('HTMLEvents');
-	event.initEvent(eventName, true, false);
+DANDOM.prototype.trigger = function(eventName, data) {
+	var event;
+	if (document['on' + eventName]) { //html event
+		event = document.createEvent('HTMLEvents');
+		event.initEvent(eventName, true, false);
+	} else if (window.CustomEvent) {
+		event = new CustomEvent(eventName, {
+			detail: data
+		});
+	} else {
+		event = document.createEvent('CustomEvent');
+		event.initCustomEvent(eventName, true, true, data);
+	}
 	this.elements.forEach(function(element) {
 		element.dispatchEvent(event);
 	});
 	return this;
+};
+
+DANDOM.prototype.exists = function() {
+	if (this.elements) {
+		if (this.elements.length) {
+			return true;
+		}
+	}
+	return false;
 };
 
 // appendIf will only run the defined dom change function if it is not yet in the dom
@@ -593,6 +616,8 @@ DANDOM.prototype.appendSort = function(appendTo) {
 
 			if (isNaN(sv)) {
 				locale = true;
+				sv = sv + '';
+				sv = sv.toLowerCase();
 			} else {
 				sv = sv * 1;
 			}
@@ -606,7 +631,8 @@ DANDOM.prototype.appendSort = function(appendTo) {
 							placed = true;
 						}
 					} else {
-						if (sv.localeCompare(checkNode.getAttribute("data-sort-value"))) {
+						var checkSV = checkNode.getAttribute('data-sort-value') || '';
+						if (sv < checkSV.toLowerCase()) {
 							placed = true;
 						}
 					}
@@ -680,7 +706,7 @@ DANDOM.prototype.scrollTo = function(scrollTo, duration) {
 DANDOM.prototype.http = function(conf) {
 	if (conf.url) {
 		if (!conf.type) {
-			if(!conf.data){
+			if (!conf.data) {
 				conf.type = 'GET';
 			} else {
 				conf.type = 'POST';
