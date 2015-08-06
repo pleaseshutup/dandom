@@ -74,8 +74,13 @@ DANDOM.prototype.byTag = function(selector) {
 };
 
 // target parent
-DANDOM.prototype.parent = function() {
-	return new DANDOM(this.elements[0].parentNode);
+DANDOM.prototype.parent = function(selector) {
+	var go = selector ? this.elements[0].parentNode.parentNode.querySelector(selector) : true;
+	if (go) {
+		return new DANDOM(this.elements[0].parentNode);
+	} else {
+		return new DANDOM(this.elements[0].parentNode).parent(selector);
+	}
 };
 
 // creates a new element
@@ -197,7 +202,9 @@ DANDOM.prototype.animate = function() {
 		speed = 250,
 		easing = 'ease-in-out',
 		callback = false,
-		K;
+		K,
+		iOS = DANDOM.prototype.clientIs('iOS'),
+		Safari = DANDOM.prototype.clientIs('Safari');
 	[].slice.call(arguments).forEach(function(argument) {
 		var type = typeof(argument);
 		switch (type) {
@@ -215,6 +222,7 @@ DANDOM.prototype.animate = function() {
 				break;
 		}
 	});
+
 	this.elements.forEach(function(element) {
 		element.transitionEndCalled = false;
 
@@ -251,7 +259,11 @@ DANDOM.prototype.animate = function() {
 			if (transitionString) {
 				transitionString += ', ';
 			}
-			transitionString += K + ' ' + (speed / 1000) + 's ' + easing;
+			if (K === 'transform' && (iOS || Safari)) {
+				transitionString += '-webkit-' + K + ' ' + (speed / 1000) + 's ' + easing;
+			} else {
+				transitionString += K + ' ' + (speed / 1000) + 's ' + easing;
+			}
 			(setStyle(K, css[K]));
 		}
 		element.style.transition = transitionString;
@@ -389,6 +401,7 @@ DANDOM.prototype.touch = function(execFunc) {
 			if (!danTouch.started) {
 
 				danTouch.started = true;
+				danTouch.tapCancel = false;
 				e.danTouch = danTouch;
 
 				danTouch.x = e.touches ? e.touches[0].pageX : e.pageX;
@@ -572,6 +585,20 @@ DANDOM.prototype.append = function(append) {
 	return this;
 };
 
+// appendFirst will add the input dom item to the current dom item
+DANDOM.prototype.appendFirst = function(append) {
+	this.elements.forEach(function(element) {
+		append.elements.forEach(function(item) {
+			if (element.firstChild) {
+				element.insertBefore(item, element.firstChild);
+			} else {
+				element.appendChild(item);
+			}
+		});
+	});
+	return this;
+};
+
 // insertBefore inserts the elements before the given element 
 DANDOM.prototype.insertBefore = function(insertBefore) {
 	var insertTarget = insertBefore.elements[0];
@@ -659,47 +686,48 @@ DANDOM.prototype.scrollTo = function(scrollTo, duration) {
 	if (!duration) {
 		duration = 250;
 	}
-	var scrollFrom = this.elements[0].scrollTop,
-		fps60 = (1000 / 60),
-		framesPerDuration = Math.round(duration / fps60);
-	var distance = (scrollTo - scrollFrom) || 0,
-		step = (distance / framesPerDuration),
-		y = scrollFrom,
-		up = (scrollTo < scrollFrom) ? true : false;
+	this.elements.forEach(function(element) {
+		var scrollFrom = element.scrollTop,
+			fps60 = (1000 / 60),
+			framesPerDuration = Math.round(duration / fps60);
+		var distance = (scrollTo - scrollFrom) || 0,
+			step = (distance / framesPerDuration),
+			y = scrollFrom,
+			up = (scrollTo < scrollFrom) ? true : false;
 
-	var steps = Math.round(distance / step),
-		execSteps = 0,
-		allDone = 0;
+		var steps = Math.round(distance / step),
+			execSteps = 0,
+			allDone = 0;
 
-	if (distance && step && steps) {
-		var thisElements = this;
-		var interval = setInterval(function() {
+		if (distance && step && steps) {
+			var interval = setInterval(function() {
 
-			y += step;
-			execSteps++;
-			if (execSteps > steps) {
-				allDone = 1;
-			}
-			if (up) {
-				if (thisElements.elements[0].scrollTop <= scrollTo) {
+				y += step;
+				execSteps++;
+				if (execSteps > steps) {
 					allDone = 1;
 				}
-			} else {
-				if (thisElements.elements[0].scrollTop >= scrollTo) {
-					allDone = 1;
+				if (up) {
+					if (element.scrollTop <= scrollTo) {
+						allDone = 1;
+					}
+				} else {
+					if (element.scrollTop >= scrollTo) {
+						allDone = 1;
+					}
 				}
-			}
-			if (allDone) {
-				clearInterval(interval);
-			} else {
-				window.requestAnimationFrame(function() {
-					thisElements.elements[0].scrollTop = y;
-				});
-			}
+				if (allDone) {
+					clearInterval(interval);
+				} else {
+					window.requestAnimationFrame(function() {
+						element.scrollTop = y;
+					});
+				}
 
-		}, fps60);
+			}, fps60);
 
-	}
+		}
+	});
 
 };
 
@@ -736,6 +764,20 @@ DANDOM.prototype.http = function(conf) {
 		};
 		request.send(conf.data);
 	}
+};
+
+DANDOM.prototype.clientIs = function(what) {
+	if (!window.dandomClient) {
+		window.dandomClient = {};
+	}
+	if (typeof window.dandomClient[what] !== undefined) {
+		if (what === 'iOS') {
+			window.dandomClient[what] = navigator.userAgent.match(/(iPad|iPhone|iPod)/g);
+		} else if (what === 'Safari') {
+			window.dandomClient[what] = (navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") < 0);
+		}
+	}
+	return window.dandomClient[what];
 };
 
 if (!window.requestAnimationFrame) {
