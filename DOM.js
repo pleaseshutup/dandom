@@ -132,8 +132,13 @@ DANDOM.prototype.addClass = function(className) {
 
 // remove Class
 DANDOM.prototype.removeClass = function(className) {
-	this.elements.forEach(function(element) {
-		element.classList.remove(className);
+	var thisElements = this;
+	className.split(/[\s,]+/).forEach(function(clsName) {
+		if (clsName) {
+			thisElements.elements.forEach(function(element) {
+				element.classList.remove(clsName);
+			});
+		}
 	});
 	return this;
 };
