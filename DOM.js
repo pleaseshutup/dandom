@@ -123,7 +123,12 @@ DANDOM.prototype.addClass = function(className) {
 	className.split(/[\s,]+/).forEach(function(clsName) {
 		if (clsName) {
 			thisElements.elements.forEach(function(element) {
-				element.classList.add(clsName);
+				if (element.classList) {
+					element.classList.add(clsName);
+				} else {
+					//ie <=9 pf
+					element.className += ' clsName';
+				}
 			});
 		}
 	});
@@ -136,7 +141,13 @@ DANDOM.prototype.removeClass = function(className) {
 	className.split(/[\s,]+/).forEach(function(clsName) {
 		if (clsName) {
 			thisElements.elements.forEach(function(element) {
-				element.classList.remove(clsName);
+				if (element.classList) {
+					element.classList.remove(clsName);
+				} else {
+					if (className) { //ie <=9 pf
+						element.className = element.className.replace(/clsName| clsName/, '');
+					}
+				}
 			});
 		}
 	});
@@ -157,10 +168,10 @@ DANDOM.prototype.css = function(css) {
 		this.elements.forEach(function(element) {
 			for (var K in css) {
 				if (K !== 'transform') {
-					element.style.setProperty(K, css[K]);
+					element.style.setProperty(K, css[K] + '');
 				} else {
-					element.style.setProperty(K, css[K]);
-					element.style.webkitTransform = css[K];
+					element.style.setProperty(K, css[K] + '');
+					element.style.webkitTransform = css[K] + '';
 				}
 			}
 		});
@@ -201,6 +212,36 @@ DANDOM.prototype.val = function(val) {
 	}
 };
 
+// sets individual transforms
+DANDOM.prototype.transform = function(transforms) {
+	this.elements.forEach(function(element) {
+		var tf = element.style.transform,
+			spl, len, t, spl2, newTrans = {},
+			setTrans = '',
+			k;
+		if (tf) {
+			spl = tf.trim().split(')');
+			len = spl.length;
+			for (t in spl) {
+				if (spl[t]) {
+					spl2 = spl[t].trim().split('(');
+					if (spl2[0] && spl2[1]) {
+						newTrans[spl2[0]] = spl2[1];
+					}
+				}
+			}
+			for (k in transforms) {
+				newTrans[k] = transforms[k] + '';
+			}
+			for (k in newTrans) {
+				setTrans += k + '(' + newTrans[k] + ') ';
+			}
+			element.style.transform = setTrans;
+			element.style.webkitTransform = setTrans;
+		}
+	});
+};
+
 // simple means of doing CSS animations triggered by javascript
 DANDOM.prototype.animate = function() {
 	var css = {},
@@ -237,6 +278,10 @@ DANDOM.prototype.animate = function() {
 			addTransform = false;
 			if (!css.transform.match(/translate/)) {
 				css.transform += ' translate3d(0,0,0)';
+			} else {
+				if (!css.transform.match(/translateZ/) && !css.transform.match(/translate3d/)) {
+					css.transform += ' translateZ(0)';
+				}
 			}
 		} else {
 			if (element.style.transform) {
@@ -252,10 +297,10 @@ DANDOM.prototype.animate = function() {
 		var setStyle = function(prop, val) {
 			setTimeout(function() {
 				if (prop !== 'transform') {
-					element.style.setProperty(prop, val);
+					element.style.setProperty(prop, val + '');
 				} else {
-					element.style.setProperty(prop, val);
-					element.style.webkitTransform = val;
+					element.style.setProperty(prop, val + '');
+					element.style.webkitTransform = val + '';
 				}
 			}, 10);
 		};
@@ -333,7 +378,7 @@ DANDOM.prototype.on = function(eventNames, execFunc) {
 		elements = this.elements;
 	eventNames.split(/[\s,]+/).forEach(function(eventName) {
 		if (eventName === 'click') {
-			if (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) {
+			if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 				// special event click for ios cause apple
 				self.touch(function danTouchTap(e) {
 					if (e.danTouch.what === 'tap') {
@@ -505,7 +550,7 @@ DANDOM.prototype.touch = function(execFunc) {
 
 		};
 
-		if (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) {
+		if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 			element.addEventListener('touchstart', ts);
 		} else {
 			element.addEventListener('touchstart', ts);
@@ -519,8 +564,8 @@ DANDOM.prototype.touch = function(execFunc) {
 // returns the absolute position of the element in pageX/pageY but the relative to the screen dimensions in regular bounding rect form
 DANDOM.prototype.pos = function() {
 	var rect = this.elements[0].getBoundingClientRect();
-	rect.pageY = rect.top + document.body.scrollTop;
-	rect.pageX = rect.left + document.body.scrollLeft;
+	rect.pageY = rect.top + document.body.scrollTop || document.documentElement.scrollTop;
+	rect.pageX = rect.left + document.body.scrollLeft || document.documentElement.scrollLeft;
 	rect.scrollHeight = this.elements[0].scrollHeight;
 	rect.scrollWidth = this.elements[0].scrollWidth;
 	rect.offsetTop = this.elements[0].offsetTop;
@@ -540,7 +585,7 @@ DANDOM.prototype.trigger = function(eventName, data) {
 	if (document['on' + eventName]) { //html event
 		event = document.createEvent('HTMLEvents');
 		event.initEvent(eventName, true, false);
-	} else if (window.CustomEvent) {
+	} else if (typeof window.CustomEvent === 'function') {
 		event = new CustomEvent(eventName, {
 			detail: data
 		});
@@ -749,6 +794,7 @@ DANDOM.prototype.http = function(conf) {
 			conf.data = '';
 		}
 		var request = new XMLHttpRequest();
+		request.timeout = conf.timeout || 5000;
 		request.open(conf.type, conf.url, true);
 		request.onload = function() {
 			var ret = false;
@@ -767,6 +813,16 @@ DANDOM.prototype.http = function(conf) {
 				conf.callback(ret);
 			}
 		};
+		request.onerror = function() {
+			if (conf.callback) {
+				conf.callback(false);
+			}
+		};
+		request.ontimeout = function() {
+			if (conf.callback) {
+				conf.callback(false);
+			}
+		};
 		request.send(conf.data);
 	}
 };
@@ -777,7 +833,7 @@ DANDOM.prototype.clientIs = function(what) {
 	}
 	if (typeof window.dandomClient[what] !== undefined) {
 		if (what === 'iOS') {
-			window.dandomClient[what] = navigator.userAgent.match(/(iPad|iPhone|iPod)/g);
+			window.dandomClient[what] = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 		} else if (what === 'Safari') {
 			window.dandomClient[what] = (navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") < 0);
 		}
@@ -785,14 +841,21 @@ DANDOM.prototype.clientIs = function(what) {
 	return window.dandomClient[what];
 };
 
-if (!window.requestAnimationFrame) {
-	requestAnimationFrame = (function() {
-		return window.webkitRequestAnimationFrame ||
-			window.mozRequestAnimationFrame ||
-			window.oRequestAnimationFrame ||
-			window.msRequestAnimationFrame ||
-			function(callback, element) {
-				window.setTimeout(callback, 1000 / 60);
+DANDOM.prototype.polyFill = function() {
+	if (!window.requestAnimationFrame) {
+		if ((document.all && !window.atob)) { //ie9 critical
+			CSSStyleDeclaration.prototype.setProperty = function(a, b) {
+				return this.setAttribute(a, b);
 			};
-	})();
-}
+		}
+		requestAnimationFrame = (function() {
+			return window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame ||
+				window.oRequestAnimationFrame ||
+				window.msRequestAnimationFrame ||
+				function(callback, element) {
+					window.setTimeout(callback, 1000 / 60);
+				};
+		})();
+	}
+};
