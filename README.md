@@ -1,7 +1,7 @@
 DANDOM
 =========
 
-DANDOM is a minimal dom selector and manipulation library with animation and http get/post support. It loosly resembles jQuery but is just 4kb min/gzip and has no dependencies.
+DANDOM is a minimal dom selector and manipulation library with animation and http get/post support. It loosly resembles jQuery but is just 3.3kb min/gzip and has no dependencies.
 
 DOM() creates a new instance of DANDOM() for convenience and brevity (instead of new DANDOM())
 
@@ -26,7 +26,7 @@ DOM().newOrFind('div', 'elementID')
 DOM Lookup/Query:
 -----------
 
-Get element by id 
+Get element by id
 ```
 DOM().id('elementID')
 ```
@@ -179,16 +179,16 @@ Animation requires an object of css properties and values to animate and allows 
 
 ```
 dandomObject.animate(
-	{'top':'50px'}, 
-	400, 
-	'ease-in-out', 
+	{'top':'50px'},
+	400,
+	'ease-in-out',
 	function(e){
 		console.log('animation completed');
 	}
 );
 ```
 
-This function automatically creates the css transition before applying the css styles. It also adds the translate3d() transform to help speed up animations by kicking in the GPU. 
+This function automatically creates the css transition before applying the css styles. It also adds the translate3d() transform to help speed up animations by kicking in the GPU.
 
 For the fastest animations stick to only animating translate, scale and opacity.
 

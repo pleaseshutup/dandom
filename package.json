@@ -1,0 +1,9 @@
+{
+  "name": "dandom",
+  "devDependencies": {
+    "uglifyjs": "latest"
+  },
+  "scripts": {
+    "build": "uglifyjs DOM.js -c -m -o DOM.min.js; gzip < DOM.min.js > DOM.min.js.gz; stat --printf=\"%s\" DOM.min.js.gz; echo \" bytes\""
+  }
+}
