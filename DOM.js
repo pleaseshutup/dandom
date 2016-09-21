@@ -75,12 +75,11 @@ DANDOM.prototype.byTag = function(selector) {
 
 // children
 DANDOM.prototype.children = function() {
-	var els = [];
+	var newDANDOM = new DANDOM();
 	this.elements.forEach(function(element){
-		els = els.concat([].slice.call(element.children));
+		newDANDOM.elements = newDANDOM.elements.concat([].slice.call(element.children));
 	});
-	this.elements = els;
-	return this;
+	return newDANDOM;
 };
 
 // target parent
