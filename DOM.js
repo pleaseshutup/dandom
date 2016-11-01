@@ -305,10 +305,10 @@ DANDOM.prototype.animate = function() {
 			addTransform = true;
 		if (css.transform) {
 			addTransform = false;
-			if (!css.transform.indexOf('translate') > -1) {
+			if (css.transform.indexOf('translate') < 0) {
 				css.transform += ' translate3d(0,0,0)';
 			} else {
-				if (!css.transform.indexOf('translateZ') > -1 && css.transform.indexOf('translate3d') < 0) {
+				if (css.transform.indexOf('translateZ') < 0 && css.transform.indexOf('translate3d') < 0) {
 					css.transform += ' translateZ(0)';
 				}
 			}
@@ -332,9 +332,11 @@ DANDOM.prototype.animate = function() {
 			} else {
 				transitionString += K + ' ' + (speed / 1000) + 's ' + easing;
 			}
-			setStyle(element, K, css[K]);
 		}
 		element.style.transition = transitionString;
+		for (K in css) {
+			setStyle(element, K, css[K]);
+		}
 		if (callback) {
 			element.removeEventListener("transitionend", listener);
 			var listener = function(e) {
