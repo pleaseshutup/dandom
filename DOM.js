@@ -274,13 +274,10 @@ DANDOM.prototype.animate = function() {
 		Safari = DANDOM.prototype.clientIs('Safari'),
 		setStyle = function(element, prop, val) {
 			window.requestAnimationFrame(function() {
-				if (prop !== 'transform') {
-					element.style.setProperty(prop, val + '');
-				} else {
-					element.style.setProperty(prop, val + '');
+				element.style.setProperty(prop, val + '');
+				if (prop === 'transform') {
 					element.style.webkitTransform = val + '';
 				}
-				
 			});
 		};
 	[].slice.call(arguments).forEach(function(argument) {
