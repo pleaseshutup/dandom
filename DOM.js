@@ -271,7 +271,18 @@ DANDOM.prototype.animate = function() {
 		callback = false,
 		K,
 		iOS = DANDOM.prototype.clientIs('iOS'),
-		Safari = DANDOM.prototype.clientIs('Safari');
+		Safari = DANDOM.prototype.clientIs('Safari'),
+		setStyle = function(element, prop, val) {
+			window.requestAnimationFrame(function() {
+				if (prop !== 'transform') {
+					element.style.setProperty(prop, val + '');
+				} else {
+					element.style.setProperty(prop, val + '');
+					element.style.webkitTransform = val + '';
+				}
+				
+			});
+		};
 	[].slice.call(arguments).forEach(function(argument) {
 		var type = typeof(argument);
 		switch (type) {
@@ -297,34 +308,23 @@ DANDOM.prototype.animate = function() {
 			addTransform = true;
 		if (css.transform) {
 			addTransform = false;
-			if (!css.transform.match(/translate/)) {
+			if (!css.transform.indexOf('translate') > -1) {
 				css.transform += ' translate3d(0,0,0)';
 			} else {
-				if (!css.transform.match(/translateZ/) && !css.transform.match(/translate3d/)) {
+				if (!css.transform.indexOf('translateZ') > -1 && css.transform.indexOf('translate3d') < 0) {
 					css.transform += ' translateZ(0)';
 				}
 			}
 		} else {
 			if (element.style.transform) {
-				if (element.style.transform.match(/translate/)) {
+				if (element.style.transform.indexOf(/translate/)) {
 					addTransform = false;
 				}
 			}
 		}
 		if (addTransform) {
-			element.style.setProperty('transform', 'translate3d(0,0,0)');
+			element.style.setProperty('transform', (element.style.transform || '') + ' translate3d(0,0,0)');
 		}
-
-		var setStyle = function(prop, val) {
-			setTimeout(function() {
-				if (prop !== 'transform') {
-					element.style.setProperty(prop, val + '');
-				} else {
-					element.style.setProperty(prop, val + '');
-					element.style.webkitTransform = val + '';
-				}
-			}, 10);
-		};
 
 		for (K in css) {
 			if (transitionString) {
@@ -335,7 +335,7 @@ DANDOM.prototype.animate = function() {
 			} else {
 				transitionString += K + ' ' + (speed / 1000) + 's ' + easing;
 			}
-			(setStyle(K, css[K]));
+			setStyle(element, K, css[K]);
 		}
 		element.style.transition = transitionString;
 		if (callback) {
@@ -641,7 +641,7 @@ DANDOM.prototype.exists = function(callbackIfExists) {
 DANDOM.prototype.inDOM = function(callbackIfExists) {
 	if (this.elements) {
 		if (this.elements.length) {
-			if (document.body.contains(this.elements[0])) {
+			if( document.body.contains(this.elements[0]) ){
 				if (typeof callbackIfExists === 'function') {
 					callbackIfExists(this);
 				}
