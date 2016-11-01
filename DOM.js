@@ -77,7 +77,7 @@ DANDOM.prototype.byTag = function(selector) {
 DANDOM.prototype.children = function() {
 	var newDANDOM = new DANDOM();
 	newDANDOM.elements = [];
-	this.elements.forEach(function(element){
+	this.elements.forEach(function(element) {
 		newDANDOM.elements = newDANDOM.elements.concat([].slice.call(element.children));
 	});
 	return newDANDOM;
@@ -596,6 +596,7 @@ DANDOM.prototype.pos = function() {
 	rect.scrollWidth = this.elements[0].scrollWidth;
 	rect.offsetTop = this.elements[0].offsetTop;
 	rect.offsetHeight = this.elements[0].offsetHeight;
+	rect.offsetWidth = this.elements[0].offsetWidth;
 
 	var el = this.elements[0];
 	for (var ot = 0, ol = 0; el !== null; ot += el.offsetTop, ol += el.offsetLeft, el = el.offsetParent);
@@ -640,11 +641,32 @@ DANDOM.prototype.exists = function(callbackIfExists) {
 DANDOM.prototype.inDOM = function(callbackIfExists) {
 	if (this.elements) {
 		if (this.elements.length) {
-			if( document.body.contains(this.elements[0]) ){
+			if (document.body.contains(this.elements[0])) {
 				if (typeof callbackIfExists === 'function') {
 					callbackIfExists(this);
 				}
 				return true;
+			}
+		}
+	}
+	return false;
+};
+
+DANDOM.prototype.isVisible = function(callbackIfExists) {
+	if (this.elements) {
+		if (this.elements.length) {
+			if (document.body.contains(this.elements[0]) && this.elements[0].offsetParent !== null && window.getComputedStyle(this.elements[0]).display !== 'none') {
+				// element is not display none and is appended, now check if in browser viewboix
+				var rect = this.elements[0].getBoundingClientRect();
+				if (rect.left < window.innerWidth && (rect.left + rect.width) > 0) {
+					if (rect.top < window.innerHeight && (rect.top + rect.height) > 0) {
+						if (typeof callbackIfExists === 'function') {
+							callbackIfExists(this);
+						}
+						return true;
+
+					}
+				}
 			}
 		}
 	}
@@ -843,8 +865,8 @@ DANDOM.prototype.http = function(conf) {
 			conf.data = '';
 		}
 		var request = new XMLHttpRequest();
-		request.timeout = conf.timeout || 5000;
 		request.open(conf.type, conf.url, true);
+		request.timeout = conf.timeout || 5000;
 		request.onload = function() {
 			var ret = false;
 			if (request.status >= 200 && request.status < 400) {
