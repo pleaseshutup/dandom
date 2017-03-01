@@ -107,6 +107,7 @@ DANDOM.prototype.new = function(type, ns) {
 			useNS = ns;
 		}
 		this.elements = [document.createElementNS(useNS, type)];
+		this.elements[0].setAttribute('xmlns', useNS);
 	}
 	return this;
 };
@@ -640,7 +641,7 @@ DANDOM.prototype.exists = function(callbackIfExists) {
 DANDOM.prototype.inDOM = function(callbackIfExists) {
 	if (this.elements) {
 		if (this.elements.length) {
-			if( document.body.contains(this.elements[0]) ){
+			if (document.body.contains(this.elements[0])) {
 				if (typeof callbackIfExists === 'function') {
 					callbackIfExists(this);
 				}
@@ -798,6 +799,37 @@ DANDOM.prototype.appendSort = function(appendTo) {
 	});
 	return this;
 };
+
+DANDOM.prototype.sort = function(reverse) {
+	var self = this,
+		locale = false,
+		sort = function(a, b) {
+			return locale ? ((a.sort || '') + '').localeCompare(b.sort) : a.sort - b.sort;
+		},
+		sortable = [].slice.call(this.elements[0].children).map(function(el) {
+			var sv = el.getAttribute('data-sort-value');
+			if (isNaN(sv)) {
+				locale = true;
+			} else {
+				sv = sv * 1;
+			}
+			return {
+				sort: sv,
+				el: el
+			}
+		}).sort(sort);
+
+	if (reverse) {
+		sortable.reverse();
+	}
+
+	sortable.forEach(function(elrow) {
+		self.elements[0].appendChild(elrow.el);
+	});
+
+	return this;
+};
+
 
 DANDOM.prototype.scrollTo = function(scrollTo, duration, property) {
 	if (!duration) {
